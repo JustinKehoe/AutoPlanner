@@ -1,12 +1,13 @@
-import requests
-import config
-
-import Course
+import dill
+from api import caller, setup
 
 if __name__ == '__main__':
-    json_string = requests.get(config.canvas_api_url, headers=config.canvas_api_headers).text
-    courses = Course.deserialize(json_string)
+    dill.load_module("session.pkl")
+    print(globals().items())
 
-    for course in courses:
+    for course in setup.courses:
         print(course.id)
         print(course.name)
+
+    # Save session for persistence
+    dill.dump_module('session.pkl')
