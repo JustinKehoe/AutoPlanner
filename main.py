@@ -11,4 +11,4 @@ if __name__ == '__main__':
         print(course.name)
 
     # Save session for persistence
-    dill.dump_module('session.pkl')
+    # dill.dump_module('session.pkl')
