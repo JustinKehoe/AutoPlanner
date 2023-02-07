@@ -4,8 +4,7 @@ import requests
 import config
 from models.course import Course
 
-# Courses which don't have an end date in Canvas
-blacklisted_courses = ["N2npDCFcWxWNii2EFsPQntEFcy22KWb8BZg88O8M", "gv4v9rYzMaj5OTkExucEP8LHAqIAmMBxJcGBLLgC"]
+
 
 
 def deserialize_courses():
@@ -15,7 +14,7 @@ def deserialize_courses():
     courses_data = json.loads(response.text)
 
     courses = [Course(course['uuid'], course['name']) for course in courses_data
-               if course['uuid'] not in blacklisted_courses]
+               if course['uuid'] not in config.blacklisted_courses]
 
     return courses
 
