@@ -7,9 +7,3 @@ class Course:
         self.name = name
 
         self.homework = []
-
-    #def get_homework(self):
-
-
-
-
