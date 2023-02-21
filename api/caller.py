@@ -1,10 +1,11 @@
 import json
 import requests
-import re
 
 import config
 from models.course import Course
 from models.assignment import Assignment
+from dateutil import parser
+import pytz
 
 
 def deserialize_courses():
@@ -30,31 +31,26 @@ def construct_course_body(course):
     }
 
 
-def create_courses(courses):
-    for course in courses:
-        requests.post(config.myhomework_api_url + "/classes",
-                      auth=(config.myhomework_client_id, config.myhomework_client_secret),
-                      json=construct_course_body(course))
+def post_course(course):
+    requests.post(config.myhomework_api_url + "/classes",
+                  auth=(config.myhomework_client_id, config.myhomework_client_secret),
+                  json=construct_course_body(course))
 
-        print(course.name + " has been created")
+    print(course.name + " has been created")
+
 
 
 def sanitize_date(date_value):
     if date_value is not None:
-        pattern = re.compile("20[0-9][0-9](-)([0-9][0-9])(-)([0-9][0-9])")
-
-        return re.search(pattern, date_value).group()
+        return str(parser.isoparse(date_value).astimezone(tz=pytz.timezone(config.local_timezone)).date())
     else:
         return ""
 
 
 def sanitize_time(time_value):
     if time_value is not None:
-        pattern = re.compile("[0-9]{2}(:)[0-9]{2}(:)[0-9]{2}")
-
-        sanitized_time = re.search(pattern, time_value).group()
-
-        return sanitized_time + "AM" if int(sanitized_time[0:1]) < 12 else "PM"
+        return str(parser.isoparse(time_value).astimezone(tz=pytz.timezone(config.local_timezone)).astimezone(
+            tz=pytz.timezone(config.local_timezone)).time().strftime("%I:%M:%S %p"))
     else:
         return ""
 
@@ -83,7 +79,6 @@ def deserialize_assignments(course):
     return assignments
 
 
-
 def construct_assignment_body(assignment):
     return {
         "hw": {
@@ -100,10 +95,10 @@ def construct_assignment_body(assignment):
     }
 
 
-def create_assignments(assignments):
-    for assignment in assignments:
-        requests.post(config.myhomework_api_url + "/homework",
-                      auth=(config.myhomework_client_id, config.myhomework_client_secret),
-                      json=construct_assignment_body(assignment))
+def post_assignment(assignment):
+    requests.post(config.myhomework_api_url + "/homework",
+                  auth=(config.myhomework_client_id, config.myhomework_client_secret),
+                  json=construct_assignment_body(assignment))
 
-        print(assignment.name + " has been added")
+    print(assignment.name + " has been posted")
+

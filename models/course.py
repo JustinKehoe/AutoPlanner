@@ -6,4 +6,4 @@ class Course:
         self.id = id
         self.name = name
 
-        self.homework = []
+        self.assignments = []

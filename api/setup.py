@@ -1,14 +1,22 @@
-from os import path
 from api import caller
 
 
-if not path.exists("session.pkl"):
-    courses = caller.deserialize_courses()
+def get_assignments(course):
+    assignments = caller.deserialize_assignments(course)
 
-    caller.create_courses(courses)
+    for assignment in assignments:
+        if assignment not in course.assignments:
+            course.assignments.append(assignment)
+            caller.post_assignment(assignment)
 
+
+def initialize(courses):
     for course in courses:
-        course.homework = caller.deserialize_assignments(course)
+        caller.post_course(course)
 
-        caller.create_assignments(course.homework)
+    update(courses)
 
+
+def update(courses):
+    for course in courses:
+        get_assignments(course)
