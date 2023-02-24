@@ -4,8 +4,6 @@ import requests
 import config
 from models.course import Course
 from models.assignment import Assignment
-from dateutil import parser
-import pytz
 
 
 def deserialize_courses():
@@ -20,43 +18,12 @@ def deserialize_courses():
     return courses
 
 
-def construct_course_body(course):
-    return {
-        "class": {
-            "id": str(course.id),
-            "name": course.name,
-            "hws": []
-        },
-        "student": config.myhomework_student_id
-    }
-
-
 def post_course(course):
     requests.post(config.myhomework_api_url + "/classes",
                   auth=(config.myhomework_client_id, config.myhomework_client_secret),
-                  json=construct_course_body(course))
+                  json=course.construct_course_body())
 
     print(course.name + " has been created")
-
-
-
-def sanitize_date(date_value):
-    if date_value is not None:
-        return str(parser.isoparse(date_value).astimezone(tz=pytz.timezone(config.local_timezone)).date())
-    else:
-        return ""
-
-
-def sanitize_time(time_value):
-    if time_value is not None:
-        return str(parser.isoparse(time_value).astimezone(tz=pytz.timezone(config.local_timezone)).astimezone(
-            tz=pytz.timezone(config.local_timezone)).time().strftime("%I:%M:%S %p"))
-    else:
-        return ""
-
-
-def assignment_is_complete(assignment):
-    return assignment["workflow_state"] != "unsubmitted"
 
 
 def deserialize_assignments(course):
@@ -70,35 +37,18 @@ def deserialize_assignments(course):
                               course.id,
                               assignment["name"],
                               assignment["description"],
-                              sanitize_date(assignment["due_at"]),
-                              sanitize_time(assignment["due_at"]),
+                              Assignment.sanitize_date(assignment["due_at"]),
+                              Assignment.sanitize_time(assignment["due_at"]),
                               assignment["submission_types"],
-                              assignment_is_complete(assignment["submission"]))
+                              Assignment.is_complete(assignment["submission"]))
                    for assignment in assignment_data]
 
     return assignments
 
 
-def construct_assignment_body(assignment):
-    return {
-        "hw": {
-            "id": str(assignment.id),
-            "description": assignment.name,
-            "due": assignment.due_date,
-            "time": assignment.time,
-            "classid": str(assignment.class_id),
-            "type": "homework",
-            "notes": assignment.description,
-            "completed": assignment.completed
-        },
-        "student": config.myhomework_student_id
-    }
-
-
 def post_assignment(assignment):
     requests.post(config.myhomework_api_url + "/homework",
                   auth=(config.myhomework_client_id, config.myhomework_client_secret),
-                  json=construct_assignment_body(assignment))
+                  json=Assignment.construct_assignment_body(assignment))
 
     print(assignment.name + " has been posted")
-

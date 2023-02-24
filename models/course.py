@@ -1,4 +1,4 @@
-import json
+import config
 
 
 class Course:
@@ -7,3 +7,13 @@ class Course:
         self.name = name
 
         self.assignments = []
+
+    def construct_course_body(self):
+        return {
+            "class": {
+                "id": str(self.id),
+                "name": self.name,
+                "hws": []
+            },
+            "student": config.myhomework_student_id
+        }
